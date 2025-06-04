@@ -5,8 +5,8 @@ const getStockCorrelation = async (req, res) => {
   try {
     const { minutes, ticker1, ticker2 } = req.query;
 
-    const url1 = `http://localhost:3000/stocks/${ticker1}?minutes=${minutes}`;
-    const url2 = `http://localhost:3000/stocks/${ticker2}?minutes=${minutes}`;
+    const url1 = `http://localhost:3001/stocks/${ticker1}?minutes=${minutes}`;
+    const url2 = `http://localhost:3001/stocks/${ticker2}?minutes=${minutes}`;
 
     const [response1, response2] = await Promise.all([
       axios.get(url1),
