@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 const axios = require('axios');
+const calculateCorrelation = require('./utils');
+
 //Server Listening to port 3000
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
@@ -25,13 +27,14 @@ async function getBearerToken() {
   }
 }
 
+// Stock Aggregation API
 app.get('/stocks/:ticker', async (req, res) => {
   try {
     const ticker = req.params.ticker;
     const { minutes, aggregation } = req.query;
     let tickerData;
     const token = await getBearerToken();
-    const response = await axios
+    await axios
       .get(`${BASE_URL}stocks/${ticker}?minutes=${minutes}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -49,8 +52,42 @@ app.get('/stocks/:ticker', async (req, res) => {
       priceHistory: tickerData,
     });
   } catch (error) {
-    console.error('Error fetching stock data:', error);
-    return res.status(500).json({ error: 'Failed to fetch stock data' });
+    return res.status(500).json({ error: 'Failed' });
+  }
+});
+
+//correlation of two stocks api
+app.get('/stockcorrelation', async (req, res) => {
+  try {
+    const { minutes, ticker1, ticker2 } = req.query;
+
+    const url1 = `http://localhost:3000/stocks/${ticker1}?minutes=${minutes}&aggregation=average`;
+    const url2 = `http://localhost:3000/stocks/${ticker2}?minutes=${minutes}&aggregation=average`;
+
+    const [response1, response2] = await Promise.all([
+      axios.get(url1),
+      axios.get(url2),
+    ]);
+
+    stocks = {
+      [ticker1]: response1.data,
+      [ticker2]: response2.data,
+    };
+    const data1 = response1.data;
+    const data2 = response2.data;
+    const prices1 = data1.priceHistory.map((p) => p.price);
+    const prices2 = data2.priceHistory.map((p) => p.price);
+
+    const minLength = Math.min(prices1.length, prices2.length);
+    const trimmed1 = prices1.slice(0, minLength);
+    const trimmed2 = prices2.slice(0, minLength);
+
+    const correlation = calculateCorrelation(trimmed1, trimmed2);
+
+    res.json({ correlation: correlation, stocks });
+  } catch (error) {
+    console.error('Error fetching stock correlation:', error);
+    return res.status(500).json({ error: 'Failed to compute correlation' });
   }
 });
 
