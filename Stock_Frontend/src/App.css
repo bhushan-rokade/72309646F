@@ -4,3 +4,24 @@
   align-items: center;
   padding: 20px;
 }
+.button-stock {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: green;
+  border-radius: 10%;
+  border-width: 0;
+  color: white;
+}
+.input-stock {
+  margin: 10px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  height: 20vh;
+  width: 50vw;
+  display: flex;
+  flex-direction: column;
+}
